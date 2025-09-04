@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Commerce Portfolio</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; }
+    .navbar { background: purple; color: #fff; padding: 15px; text-align: center; }
+    .navbar button { background: #fff; color: purple; border: none; padding: 8px 15px; margin: 0 5px; cursor: pointer; border-radius: 5px; }
+    .container { padding: 20px; }
+    .page { display: none; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .active { display: block; }
+    .btn { background: purple; color: #fff; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+    .btn:hover { background: darkviolet; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .card { background: #fafafa; border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center; }
+    .card img { width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; }
+    .box { background: #fafafa; border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+    .box h4 { margin-bottom: 10px; color: purple; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <h2>Welcome to My Portfolio Products</h2>
+    <button onclick="showPage('dashboard')">Dashboard</button>
+    <button onclick="showPage('product')">Product</button>
+    <button onclick="showPage('checkout')">Checkout</button>
+  </div>
+
+  <div class="container">
+    <!-- Dashboard Page -->
+    <div id="dashboard" class="page active">
+      <h3>Dashboard - Products</h3>
+      <div class="grid" id="product-list"></div>
+    </div>
+
+    <!-- Product Page -->
+    <div id="product" class="page">
+      <h3>Product Detail</h3>
+      <div class="box">
+        <img id="product-img" src="" alt="Product" style="width:200px; border-radius:8px;">
+        <h4 id="product-name"></h4>
+        <p id="product-desc"></p>
+        <p><b>Price: $<span id="product-price"></span></b></p>
+        <button class="btn" onclick="addToCart()">Add to Cart</button>
+        <button class="btn" onclick="removeFromCart()">Remove from Cart</button>
+      </div>
+    </div>
+
+    <!-- Checkout Page -->
+    <div id="checkout" class="page">
+      <h3>Checkout</h3>
+
+      <div class="box">
+        <h4>Cart Summary</h4>
+        <p><b>Product:</b> <span id="cart-name">-</span></p>
+        <p><b>Price:</b> $<span id="cart-price">0.00</span></p>
+        <p><b>Tax (10%):</b> $<span id="checkout-tax">0.00</span></p>
+        <p><b>Total:</b> $<span id="checkout-total">0.00</span></p>
+      </div>
+
+      <div class="box">
+        <h4>Delivery Address</h4>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" placeholder="Enter your name">
+        </div>
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="text" placeholder="Enter your mobile number">
+        </div>
+        <div class="form-group">
+          <label>Full Address</label>
+          <textarea rows="3" placeholder="Enter delivery address"></textarea>
+        </div>
+      </div>
+
+      <div class="box">
+        <h4>Payment Method</h4>
+        <div class="form-group">
+          <label>Select Payment Option</label>
+          <select>
+            <option>Online Payment (UPI, Card, Net Banking)</option>
+            <option>Cash on Delivery (Offline)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="box">
+        <h4>Replacement & Return Policy</h4>
+        <p>✅ Easy 7-day replacement available for defective or damaged products.</p>
+        <p>✅ 30-day return policy if the product does not meet expectations.</p>
+        <p>⚠️ Please ensure the product is unused and in original packaging for return.</p>
+      </div>
+
+      <button class="btn">Confirm Order</button>
+    </div>
+  </div>
+
+  <script>
+    const products = [
+      {name: "Fuel Shield", desc: "IoT-based fuel monitoring system.", price: 299.99, img: "https://via.placeholder.com/200"},
+      {name: "Smart Lock", desc: "Advanced biometric IoT smart lock.", price: 149.99, img: "https://via.placeholder.com/200"},
+      {name: "IoT Light", desc: "Smart home lighting solution.", price: 49.99, img: "https://via.placeholder.com/200"},
+      {name: "Drone Pro", desc: "AI-powered surveillance drone.", price: 799.99, img: "https://via.placeholder.com/200"},
+      {name: "Air Monitor", desc: "Real-time air quality monitor.", price: 199.99, img: "https://via.placeholder.com/200"},
+      {name: "Smart Meter", desc: "IoT-enabled energy consumption tracker.", price: 129.99, img: "https://via.placeholder.com/200"},
+      {name: "Health Band", desc: "IoT wearable health tracker.", price: 89.99, img: "https://via.placeholder.com/200"},
+      {name: "Water Sensor", desc: "Smart water leakage detector.", price: 59.99, img: "https://via.placeholder.com/200"},
+      {name: "CCTV Shield", desc: "IoT-based home security CCTV system.", price: 499.99, img: "https://via.placeholder.com/200"}
+    ];
+
+    let currentProduct = null;
+    let inCart = false;
+
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+    }
+
+    function loadDashboard() {
+      const list = document.getElementById("product-list");
+      list.innerHTML = "";
+      products.forEach((p, i) => {
+        list.innerHTML += `
+          <div class="card">
+            <img src="${p.img}" alt="${p.name}">
+            <h4>${p.name}</h4>
+            <p>$${p.price.toFixed(2)}</p>
+            <button class="btn" onclick="viewProduct(${i})">View</button>
+          </div>
+        `;
+      });
+    }
+
+    function viewProduct(index) {
+      currentProduct = products[index];
+      document.getElementById("product-name").textContent = currentProduct.name;
+      document.getElementById("product-desc").textContent = currentProduct.desc;
+      document.getElementById("product-price").textContent = currentProduct.price.toFixed(2);
+      document.getElementById("product-img").src = currentProduct.img;
+      showPage('product');
+    }
+
+    function addToCart() {
+      inCart = true;
+      document.getElementById("cart-name").textContent = currentProduct.name;
+      document.getElementById("cart-price").textContent = currentProduct.price.toFixed(2);
+
+      let tax = currentProduct.price * 0.10;
+      document.getElementById("checkout-tax").textContent = tax.toFixed(2);
+      document.getElementById("checkout-total").textContent = (currentProduct.price + tax).toFixed(2);
+
+      showPage('checkout');
+    }
+
+    function removeFromCart() {
+      if (inCart) {
+        inCart = false;
+        document.getElementById("cart-name").textContent = "-";
+        document.getElementById("cart-price").textContent = "0.00";
+        document.getElementById("checkout-tax").textContent = "0.00";
+        document.getElementById("checkout-total").textContent = "0.00";
+      }
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
